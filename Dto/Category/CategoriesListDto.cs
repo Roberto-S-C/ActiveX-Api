@@ -1,6 +1,6 @@
-﻿namespace ActiveX_Api.Models
+﻿namespace ActiveX_Api.Dto.Category
 {
-    public class Category
+    public class CategoriesListDto
     {
         public int Id { get; set; }
         public string? Name { get; set; }

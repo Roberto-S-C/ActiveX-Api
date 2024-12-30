@@ -1,12 +1,15 @@
-﻿namespace ActiveX_Api.Models
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace ActiveX_Api.Models
 {
     public class Product
     {
         public int Id { get; set; }
         public string? Name { get; set; }
         public string? Description { get; set; }
-        public decimal? Price { get; set; }
-        public string? ModelFile { get; set; }
+        [Column(TypeName = "decimal(12, 2)")]
+        public decimal Price { get; set; }
+        public string? File3DModel { get; set; }
         public int CategoryId { get; set; }
         public Category Category { get; set; }
         public ICollection<Review> Reviews { get; set; }

@@ -20,15 +20,8 @@ namespace ActiveX_Api.Models
                 .WithOne(e => e.Product)
                 .HasForeignKey(e => e.ProductId)
                 .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder.Entity<Category>()
-                .HasKey(e => e.Id);
-            modelBuilder.Entity<Category>()
-                .HasMany(e => e.Products)
-                .WithOne(e => e.Category)
-                .HasForeignKey(e => e.CategoryId)
-                .HasPrincipalKey (e => e.Id)
-                .OnDelete(DeleteBehavior.NoAction);
+            modelBuilder.Entity<Product>()
+                .HasOne(e => e.Category);
 
             modelBuilder.Entity<Review>()
                 .HasOne(e => e.Product)
