@@ -6,7 +6,7 @@
         public string? Title { get; set; }
         public string? Content { get; set; }
         public int Stars {  get; set; }
-        public DateTime? Created { get; set; } = default(DateTime?);
+        public DateOnly CreatedAt { get; set; }
         public int ProductId { get; set; }
         public Product Product { get; set; }
     }

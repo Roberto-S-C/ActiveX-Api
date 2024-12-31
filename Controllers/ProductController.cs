@@ -31,14 +31,56 @@ namespace ActiveX_Api.Controllers
            return (product == null ? NotFound() : Ok(product.FromProductToGetProductDto()));
         } 
 
-        //[HttpPost]
-        //public async Task<ActionResult<Product>> CreateProduct ([FromBody] CreateProductDto productDto)
-        //{
-        //   if (productDto == null) {
-        //        return BadRequest();
-        //   } 
+        [HttpPost]
+        public async Task<ActionResult<Product>> CreateProduct ([FromBody] CreateProductDto productDto)
+        {
+               if (productDto == null) {
+                  return BadRequest();
+               }
 
+            var category =  await _context.Categories.FindAsync(productDto.CategoryId);
+            if (category == null) return BadRequest("Invalid CategoryId");
 
-        //}
+            var product = productDto.FromCreateProductDtoToProduct();
+            product.CreatedAt = DateOnly.FromDateTime(DateTime.Now);
+            await _context.Products.AddAsync(product);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(GetProduct), new { id = product.Id }, product);
+
+        }
+
+        [HttpPatch("{id}")]
+        public async Task<ActionResult> UpdateProduct([FromRoute] int id, [FromBody] UpdateProductDto productDto)
+        {
+            var product = await _context.Products.FindAsync(id);
+            if (product == null) return NotFound();
+
+            var category = await _context.Categories.FindAsync(productDto.CategoryId);
+            if (category == null) return BadRequest("Invalid CategoryId");
+
+            product.Name = productDto.Name;
+            product.Description = productDto.Description;
+            product.Price = productDto.Price;
+            product.File3DModel = productDto.File3DModel;
+            product.CategoryId = productDto.CategoryId;
+            product.CreatedAt = DateOnly.FromDateTime(DateTime.Now);
+
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<ActionResult> DeleteProduct([FromRoute] int id)
+        {
+            var product = await _context.Products.FindAsync(id);
+            
+            if (product == null) return NotFound();
+
+            _context.Products.Remove(product);
+            await _context.SaveChangesAsync();
+
+            return NoContent(); 
+        }
     }
 }

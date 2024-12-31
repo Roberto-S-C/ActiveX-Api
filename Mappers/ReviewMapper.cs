@@ -13,7 +13,7 @@ namespace ActiveX_Api.Mappers
                 Title = review.Title,
                 Content = review.Content,
                 Stars = review.Stars,
-                Created = review.Created,
+                CreatedAt = review.CreatedAt,
                 ProductId = review.ProductId
             };
         }

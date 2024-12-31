@@ -18,8 +18,7 @@ namespace ActiveX_Api.Models
             modelBuilder.Entity<Product>()
                 .HasMany(e => e.Reviews)
                 .WithOne(e => e.Product)
-                .HasForeignKey(e => e.ProductId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .HasForeignKey(e => e.ProductId);
             modelBuilder.Entity<Product>()
                 .HasOne(e => e.Category);
 
@@ -27,7 +26,7 @@ namespace ActiveX_Api.Models
                 .HasOne(e => e.Product)
                 .WithMany(e => e.Reviews)
                 .HasForeignKey (e => e.ProductId)
-                .OnDelete(DeleteBehavior.NoAction);
+                .OnDelete(DeleteBehavior.Cascade);
 
         }
 
