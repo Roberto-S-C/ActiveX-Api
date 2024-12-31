@@ -17,5 +17,17 @@ namespace ActiveX_Api.Mappers
                 ProductId = review.ProductId
             };
         }
+
+        public static Review FromCreateReviewDtoToReview (this CreateReviewDto review)
+        {
+            return new Review
+            {
+                Title = review.Title,
+                Content = review.Content,
+                Stars = review.Stars,
+                CreatedAt = DateOnly.FromDateTime(DateTime.Now),
+                ProductId = review.ProductId
+            };
+        }
     }
 }

@@ -25,6 +25,7 @@ namespace ActiveX_Api.Mappers
                 Description = product.Description,
                 Price = product.Price,
                 File3DModel = product.File3DModel,
+                CreatedAt = DateOnly.FromDateTime(DateTime.Now),
                 CategoryId = product.CategoryId
             };
         }  

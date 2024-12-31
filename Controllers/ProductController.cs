@@ -34,15 +34,10 @@ namespace ActiveX_Api.Controllers
         [HttpPost]
         public async Task<ActionResult<Product>> CreateProduct ([FromBody] CreateProductDto productDto)
         {
-               if (productDto == null) {
-                  return BadRequest();
-               }
-
             var category =  await _context.Categories.FindAsync(productDto.CategoryId);
             if (category == null) return BadRequest("Invalid CategoryId");
 
             var product = productDto.FromCreateProductDtoToProduct();
-            product.CreatedAt = DateOnly.FromDateTime(DateTime.Now);
             await _context.Products.AddAsync(product);
             await _context.SaveChangesAsync();
 
