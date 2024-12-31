@@ -13,5 +13,21 @@ namespace ActiveX_Api.Mappers
                 Name = category.Name,
             };
         }
+
+        public static Category FromCreateCategoryDtoToCategory (this CreateCategoryDto category)
+        {
+            return new Category
+            {
+                Name = category.Name,
+            };
+        }
+
+        public static Category FromUpdateCategoryDtoToCategory(this UpdateCategoryDto category)
+        {
+            return new Category
+            {
+                Name = category.Name,
+            };
+        }
     }
 }
