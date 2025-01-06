@@ -1,10 +1,12 @@
 ﻿using ActiveX_Api.Dto.Review;
 using ActiveX_Api.Mappers;
 using ActiveX_Api.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ActiveX_Api.Controllers
 {
+    [Authorize]
     [Route("api/reviews")]
     [ApiController]
     public class ReviewController : ControllerBase
@@ -16,6 +18,7 @@ namespace ActiveX_Api.Controllers
             _context = context;
         }
 
+        [AllowAnonymous]
         [HttpGet("{id}")]
         public async Task<ActionResult> GetReview (int id)
         {

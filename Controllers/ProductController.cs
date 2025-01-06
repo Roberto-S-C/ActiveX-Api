@@ -1,6 +1,8 @@
-﻿using ActiveX_Api.Dto.Product;
+﻿using ActiveX_Api.Constants;
+using ActiveX_Api.Dto.Product;
 using ActiveX_Api.Mappers;
 using ActiveX_Api.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -29,8 +31,9 @@ namespace ActiveX_Api.Controllers
         {
            var product = await _context.Products.Include(p => p.Category).Include(p => p.Reviews).FirstOrDefaultAsync(p => p.Id == id);
            return (product == null ? NotFound() : Ok(product.FromProductToGetProductDto()));
-        } 
+        }
 
+        [Authorize(Roles = RoleNames.Administrator)]
         [HttpPost]
         public async Task<ActionResult<Product>> CreateProduct ([FromBody] CreateProductDto productDto)
         {
@@ -45,6 +48,7 @@ namespace ActiveX_Api.Controllers
 
         }
 
+        [Authorize(Roles = RoleNames.Administrator)]
         [HttpPatch("{id}")]
         public async Task<ActionResult> UpdateProduct([FromRoute] int id, [FromBody] UpdateProductDto productDto)
         {
@@ -65,6 +69,7 @@ namespace ActiveX_Api.Controllers
             return NoContent();
         }
 
+        [Authorize(Roles = RoleNames.Administrator)]
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteProduct([FromRoute] int id)
         {

@@ -1,7 +1,9 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using ActiveX_Api.Constants;
 using ActiveX_Api.Dto.Account;
 using ActiveX_Api.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -15,17 +17,20 @@ namespace ActiveX_Api.Controllers
         private readonly AppDbContext _context;
         private readonly IConfiguration _configuration;
         private readonly UserManager<ApiUser> _userManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly SignInManager<ApiUser> _signInManager;
 
         public AccountController(
             AppDbContext context,
             IConfiguration configuration,
             UserManager<ApiUser> userManager,
+            RoleManager<IdentityRole> roleManager,
             SignInManager<ApiUser> signInManager)
         {
             _context = context;
             _configuration = configuration;
             _userManager = userManager;
+            _roleManager = roleManager;
             _signInManager = signInManager;
         }
 
@@ -83,6 +88,12 @@ namespace ActiveX_Api.Controllers
                         claims.Add(new Claim(
                             ClaimTypes.Name, user.UserName));
 
+                        var roles = await _userManager.GetRolesAsync(user);
+                        foreach (var role in roles)
+                        {
+                            claims.Add(new Claim(ClaimTypes.Role, role));
+                        }
+
                         var jwtObject = new JwtSecurityToken(
                             issuer: _configuration["JWT:Issuer"],
                             audience: _configuration["JWT:Audience"],
@@ -105,5 +116,29 @@ namespace ActiveX_Api.Controllers
                     return BadRequest($"Exception: {e.Message}"); 
             }
         }
+
+        [Authorize(Roles = RoleNames.Administrator)]
+        [HttpPost]
+        public async Task<IActionResult> addAdministrator([FromBody] AddAdminDto userDto)
+        {
+            try
+            {
+                var user = await _userManager.FindByNameAsync(userDto.UserName);
+                if (user == null) return NotFound("Username not found.");
+
+                if(!await _roleManager.RoleExistsAsync(RoleNames.Administrator))
+                {
+                    await _roleManager.CreateAsync(new IdentityRole(RoleNames.Administrator));
+                }
+
+                var result = await _userManager.AddToRoleAsync(user, RoleNames.Administrator);
+                if(result.Succeeded) return Ok($"User {user.UserName} added to Admin Role.");
+
+                return BadRequest($"Assigning admin role to {user.UserName} failed.");
+            }
+            catch(Exception e) {
+                return BadRequest(e.Message);
+            }
+        } 
     }
 }

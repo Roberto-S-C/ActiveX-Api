@@ -97,10 +97,6 @@ app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapGet("/error",
-    [EnableCors("AnyOrigin")]
-    [ResponseCache(NoStore = true)]
-    () => Results.Problem());
 app.MapControllers();
 
 app.Run();

@@ -1,6 +1,8 @@
-﻿using ActiveX_Api.Dto.Category;
+﻿using ActiveX_Api.Constants;
+using ActiveX_Api.Dto.Category;
 using ActiveX_Api.Mappers;
 using ActiveX_Api.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -32,6 +34,7 @@ namespace ActiveX_Api.Controllers
             return (category == null) ? NotFound() : Ok(category); 
         }
 
+        [Authorize(Roles = RoleNames.Administrator)]
         [HttpPost]
         public async Task<ActionResult> CreateCategory([FromBody] CreateCategoryDto categoryDto)
         {
@@ -42,6 +45,7 @@ namespace ActiveX_Api.Controllers
             return CreatedAtAction(nameof(GetCategory), new { id = category.Id }, category);
         }
 
+        [Authorize(Roles = RoleNames.Administrator)]
         [HttpPut("{id}")]
         public async Task<ActionResult> UpdateCategory([FromBody] UpdateCategoryDto categoryDto, int id)
         {
@@ -54,6 +58,7 @@ namespace ActiveX_Api.Controllers
             return NoContent();
         }
 
+        [Authorize(Roles = RoleNames.Administrator)]
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteCategory([FromRoute] int id)
         {
