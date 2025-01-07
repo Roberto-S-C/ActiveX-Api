@@ -22,13 +22,25 @@ namespace ActiveX_Api.Models
                 .HasForeignKey(e => e.ProductId);
             modelBuilder.Entity<Product>()
                 .HasOne(e => e.Category);
+            modelBuilder.Entity<Product>()
+                .HasOne(e => e.User)
+                .WithMany(e => e.Products)
+                .HasForeignKey(e => e.UserId);
 
             modelBuilder.Entity<Review>()
                 .HasOne(e => e.Product)
                 .WithMany(e => e.Reviews)
                 .HasForeignKey (e => e.ProductId)
                 .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<Review>()
+                .HasOne(e => e.User)
+                .WithMany(e => e.Reviews)
+                .HasForeignKey(e => e.UserId);
 
+            modelBuilder.Entity<Category>()
+                .HasOne(e => e.User)
+                .WithMany(e => e.Categories)
+                .HasForeignKey(e => e.UserId);
         }
 
         public DbSet<Product> Products { get; set; }

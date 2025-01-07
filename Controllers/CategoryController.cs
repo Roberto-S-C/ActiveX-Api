@@ -39,6 +39,9 @@ namespace ActiveX_Api.Controllers
         public async Task<ActionResult> CreateCategory([FromBody] CreateCategoryDto categoryDto)
         {
             var category = categoryDto.FromCreateCategoryDtoToCategory();
+            var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimNames.Id)?.Value;
+            category.UserId = userId;
+
             await _context.Categories.AddAsync(category);
             await _context.SaveChangesAsync();
 
@@ -52,6 +55,9 @@ namespace ActiveX_Api.Controllers
             var category = await _context.Categories.FindAsync(id);            
             if (category == null) return NotFound();
 
+            var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimNames.Id)?.Value;
+            if(category.UserId != userId) return Unauthorized("Only owner can edit category");
+
             category.Name = categoryDto.Name;
             await _context.SaveChangesAsync();
 
@@ -64,6 +70,9 @@ namespace ActiveX_Api.Controllers
         {
             var category = await _context.Categories.FindAsync(id);
             if (category == null) return NotFound();
+
+            var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimNames.Id)?.Value;
+            if(category.UserId != userId) return Unauthorized("Only owner can delete category");
 
             _context.Categories.Remove(category);
             await _context.SaveChangesAsync();

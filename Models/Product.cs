@@ -13,6 +13,8 @@ namespace ActiveX_Api.Models
         public DateOnly CreatedAt { get; set; }
         public int CategoryId { get; set; }
         public Category Category { get; set; }
+        public string? UserId { get; set; }
+        public ApiUser User { get; set; }
         public ICollection<Review> Reviews { get; set; }
     }
 }

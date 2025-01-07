@@ -3,6 +3,7 @@ using ActiveX_Api.Dto.Product;
 using ActiveX_Api.Mappers;
 using ActiveX_Api.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,11 +13,13 @@ namespace ActiveX_Api.Controllers
     [ApiController]
     public class ProductController : ControllerBase
     {
-       private readonly AppDbContext _context; 
+        private readonly AppDbContext _context; 
+        private readonly UserManager<ApiUser> _userManager; 
 
-        public ProductController(AppDbContext context)
+        public ProductController(AppDbContext context, UserManager<ApiUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         [HttpGet]
@@ -41,6 +44,9 @@ namespace ActiveX_Api.Controllers
             if (category == null) return BadRequest("Invalid CategoryId");
 
             var product = productDto.FromCreateProductDtoToProduct();
+            var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimNames.Id)?.Value;
+            product.UserId = userId;
+
             await _context.Products.AddAsync(product);
             await _context.SaveChangesAsync();
 
@@ -54,6 +60,9 @@ namespace ActiveX_Api.Controllers
         {
             var product = await _context.Products.FindAsync(id);
             if (product == null) return NotFound();
+
+            var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimNames.Id)?.Value;
+            if(product.UserId != userId) return Unauthorized("Only owner can edit product"); 
 
             var category = await _context.Categories.FindAsync(productDto.CategoryId);
             if (category == null) return BadRequest("Invalid CategoryId");
@@ -76,6 +85,9 @@ namespace ActiveX_Api.Controllers
             var product = await _context.Products.FindAsync(id);
             
             if (product == null) return NotFound();
+
+            var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimNames.Id)?.Value;
+            if(product.UserId != userId) return Unauthorized("Only owner can delete product"); 
 
             _context.Products.Remove(product);
             await _context.SaveChangesAsync();

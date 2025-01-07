@@ -86,6 +86,8 @@ namespace ActiveX_Api.Controllers
 
                         var claims = new List<Claim>();
                         claims.Add(new Claim(
+                            "UserId", user.Id));
+                        claims.Add(new Claim(
                             ClaimTypes.Name, user.UserName));
 
                         var roles = await _userManager.GetRolesAsync(user);
