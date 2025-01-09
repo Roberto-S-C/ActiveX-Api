@@ -3,6 +3,7 @@ using ActiveX_Api.Dto.Product;
 using ActiveX_Api.Mappers;
 using ActiveX_Api.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -15,11 +16,17 @@ namespace ActiveX_Api.Controllers
     {
         private readonly AppDbContext _context; 
         private readonly UserManager<ApiUser> _userManager; 
+        private readonly IConfiguration _config;
+        private readonly IWebHostEnvironment _enviroment;
 
-        public ProductController(AppDbContext context, UserManager<ApiUser> userManager)
+        private readonly long _fileSizeLimit = 50 * 1024 * 1024;
+
+        public ProductController(AppDbContext context, UserManager<ApiUser> userManager, IConfiguration config, IWebHostEnvironment enviroment)
         {
             _context = context;
             _userManager = userManager;
+            _config = config;
+            _enviroment = enviroment;
         }
 
         [HttpGet]
@@ -38,20 +45,36 @@ namespace ActiveX_Api.Controllers
 
         [Authorize(Roles = RoleNames.Administrator)]
         [HttpPost]
-        public async Task<ActionResult<Product>> CreateProduct ([FromBody] CreateProductDto productDto)
+        public async Task<ActionResult<Product>> CreateProduct ([FromForm] CreateProductDto productDto)
         {
             var category =  await _context.Categories.FindAsync(productDto.CategoryId);
             if (category == null) return BadRequest("Invalid CategoryId");
 
-            var product = productDto.FromCreateProductDtoToProduct();
-            var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimNames.Id)?.Value;
-            product.UserId = userId;
+            if(productDto.File3DModel?.Length > 0) {
 
-            await _context.Products.AddAsync(product);
-            await _context.SaveChangesAsync();
+                if (productDto.File3DModel.ContentType != "model/gltf-binary") return BadRequest("Invalid file type.");
 
-            return CreatedAtAction(nameof(GetProduct), new { id = product.Id }, product);
+                var folderPath = Path.Combine(_enviroment.WebRootPath, _config["StoredFiles"]); ;
+                var filePath = Path.Combine(folderPath, Path.GetRandomFileName());
 
+                using (var stream = System.IO.File.Create(filePath))
+                {
+                    await productDto.File3DModel.CopyToAsync(stream);
+                }
+
+                var product = productDto.FromCreateProductDtoToProduct();
+                var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimNames.Id)?.Value;
+                product.UserId = userId;
+                product.File3DModel = filePath;
+
+                await _context.Products.AddAsync(product);
+                await _context.SaveChangesAsync();
+                return CreatedAtAction(nameof(GetProduct), new { id = product.Id }, product);
+            }
+            else
+            {
+                return BadRequest("Can't send empty files");
+            }
         }
 
         [Authorize(Roles = RoleNames.Administrator)]
