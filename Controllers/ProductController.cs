@@ -1,4 +1,5 @@
-﻿using ActiveX_Api.Constants;
+﻿using System.Runtime.CompilerServices;
+using ActiveX_Api.Constants;
 using ActiveX_Api.Dto.Product;
 using ActiveX_Api.Mappers;
 using ActiveX_Api.Models;
@@ -54,10 +55,13 @@ namespace ActiveX_Api.Controllers
 
                 if (productDto.File3DModel.ContentType != "model/gltf-binary") return BadRequest("Invalid file type.");
 
-                var folderPath = Path.Combine(_enviroment.WebRootPath, _config["StoredFiles"]); ;
-                var filePath = Path.Combine(folderPath, Path.GetRandomFileName());
+                string randomFileName = Path.GetRandomFileName();
+                int dotIndex = randomFileName.LastIndexOf('.');
+                string fileName = randomFileName.Substring(0, dotIndex) + ".glb"; 
+                string filePath = Path.Combine(_config["StoredFiles"], fileName);
+                string absolutePath = Path.Combine(_enviroment.WebRootPath, filePath); ;
 
-                using (var stream = System.IO.File.Create(filePath))
+                using (var stream = System.IO.File.Create(absolutePath))
                 {
                     await productDto.File3DModel.CopyToAsync(stream);
                 }

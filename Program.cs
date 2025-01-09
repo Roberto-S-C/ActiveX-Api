@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.StaticFiles;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -90,9 +91,14 @@ else
 
 app.UseHttpsRedirection();
 
-app.UseCors();
+var provider = new FileExtensionContentTypeProvider();
+provider.Mappings[".glb"] = "model/gltf-binary";
+app.UseStaticFiles(new StaticFileOptions
+{
+    ContentTypeProvider = provider
+});
 
-app.UseStaticFiles();
+app.UseCors();
 
 app.UseAuthentication();
 app.UseAuthorization();
