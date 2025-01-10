@@ -61,17 +61,12 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddCors(options =>
 {
-    options.AddDefaultPolicy(cfg =>
+    options.AddDefaultPolicy(policy =>
     {
-        cfg.WithOrigins(builder.Configuration["AllowedOrigins"]);
-        cfg.AllowAnyHeader();
-        cfg.AllowAnyMethod();
-    });
-    options.AddPolicy(name: "AnyOrigin", cfg => 
-    { 
-        cfg.AllowAnyOrigin();
-        cfg.AllowAnyHeader();
-        cfg.AllowAnyMethod();
+        policy.WithOrigins(builder.Configuration["AllowedOrigins"]);
+        policy.AllowAnyOrigin();
+        policy.AllowAnyMethod();
+        policy.AllowAnyHeader();
     });
 });
 
@@ -91,6 +86,8 @@ else
 
 app.UseHttpsRedirection();
 
+app.UseCors();
+
 var provider = new FileExtensionContentTypeProvider();
 provider.Mappings[".glb"] = "model/gltf-binary";
 app.UseStaticFiles(new StaticFileOptions
@@ -98,7 +95,6 @@ app.UseStaticFiles(new StaticFileOptions
     ContentTypeProvider = provider
 });
 
-app.UseCors();
 
 app.UseAuthentication();
 app.UseAuthorization();
