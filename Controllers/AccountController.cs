@@ -45,6 +45,13 @@ namespace ActiveX_Api.Controllers
                 newUser.Email = userDto.Email;
                 var result = await _userManager.CreateAsync(newUser, userDto.Password);
 
+                if(!await _roleManager.RoleExistsAsync(RoleNames.Customer))
+                {
+                    await _roleManager.CreateAsync(new IdentityRole(RoleNames.Customer));
+                }
+
+                await _userManager.AddToRoleAsync(newUser, RoleNames.Customer);
+
                 if (result.Succeeded) {
                     return Ok($"User {userDto.UserName} created.");
                 }
@@ -134,6 +141,7 @@ namespace ActiveX_Api.Controllers
                     await _roleManager.CreateAsync(new IdentityRole(RoleNames.Administrator));
                 }
 
+                await _userManager.RemoveFromRoleAsync(user, RoleNames.Customer);
                 var result = await _userManager.AddToRoleAsync(user, RoleNames.Administrator);
                 if(result.Succeeded) return Ok($"User {user.UserName} added to Admin Role.");
 
@@ -150,7 +158,13 @@ namespace ActiveX_Api.Controllers
         {
             var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimNames.Id)?.Value;
             var user = await _userManager.FindByIdAsync(userId);
-            return (user != null ?  Ok(user.FromApiUserToUserDto()) : NotFound()); 
+            var roles = await _userManager.GetRolesAsync(user);
+            UserDto userDto = user.FromApiUserToUserDto();
+            foreach (var role in roles)
+            {
+                userDto.Role = role; 
+            }
+            return (user != null ?  Ok(userDto) : NotFound()); 
         } 
     }
 }
