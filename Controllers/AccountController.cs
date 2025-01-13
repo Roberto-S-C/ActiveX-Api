@@ -2,6 +2,7 @@
 using System.Security.Claims;
 using ActiveX_Api.Constants;
 using ActiveX_Api.Dto.Account;
+using ActiveX_Api.Mappers;
 using ActiveX_Api.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -141,6 +142,15 @@ namespace ActiveX_Api.Controllers
             catch(Exception e) {
                 return BadRequest(e.Message);
             }
+        }
+
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> user ()
+        {
+            var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimNames.Id)?.Value;
+            var user = await _userManager.FindByIdAsync(userId);
+            return (user != null ?  Ok(user.FromApiUserToUserDto()) : NotFound()); 
         } 
     }
 }
