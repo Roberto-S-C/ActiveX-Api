@@ -152,19 +152,5 @@ namespace ActiveX_Api.Controllers
             }
         }
 
-        [Authorize]
-        [HttpGet]
-        public async Task<IActionResult> user ()
-        {
-            var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimNames.Id)?.Value;
-            var user = await _userManager.FindByIdAsync(userId);
-            var roles = await _userManager.GetRolesAsync(user);
-            UserDto userDto = user.FromApiUserToUserDto();
-            foreach (var role in roles)
-            {
-                userDto.Role = role; 
-            }
-            return (user != null ?  Ok(userDto) : NotFound()); 
-        } 
     }
 }

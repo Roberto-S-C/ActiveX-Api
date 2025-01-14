@@ -8,5 +8,7 @@
         public int Stars {  get; set; }
         public DateOnly CreatedAt { get; set; }
         public int ProductId { get; set; }
+        public string? ProductName { get; set; }
+        public string? UserName { get; set; }
     }
 }

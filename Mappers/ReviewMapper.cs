@@ -14,7 +14,9 @@ namespace ActiveX_Api.Mappers
                 Content = review.Content,
                 Stars = review.Stars,
                 CreatedAt = review.CreatedAt,
-                ProductId = review.ProductId
+                ProductId = review.ProductId,
+                ProductName = review.Product.Name,
+                UserName = review.UserName
             };
         }
 

@@ -4,10 +4,10 @@ using ActiveX_Api.Mappers;
 using ActiveX_Api.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace ActiveX_Api.Controllers
 {
-    [Authorize]
     [Route("api/reviews")]
     [ApiController]
     public class ReviewController : ControllerBase
@@ -19,15 +19,15 @@ namespace ActiveX_Api.Controllers
             _context = context;
         }
 
-        [AllowAnonymous]
         [HttpGet("{id}")]
         public async Task<ActionResult> GetReview (int id)
         {
-            var review = await _context.Reviews.FindAsync(id);
+            var review = await _context.Reviews.Include(r => r.Product).FirstOrDefaultAsync(r => r.Id == id);
 
             return (review == null) ? NotFound() : Ok(review.FromReviewToReviewListDto()); 
         }
 
+        [Authorize]
         [HttpPost]
         public async Task<ActionResult> CreateReview ([FromBody] CreateReviewDto reviewDto)
         {
@@ -36,7 +36,9 @@ namespace ActiveX_Api.Controllers
 
             var review = reviewDto.FromCreateReviewDtoToReview();
             var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimNames.Id)?.Value;
+            var userName = User.Claims.FirstOrDefault(c => c.Type == ClaimNames.UserName)?.Value;
             review.UserId = userId;
+            review.UserName = userName;
 
             await _context.Reviews.AddAsync(review);
             await _context.SaveChangesAsync();
@@ -44,6 +46,7 @@ namespace ActiveX_Api.Controllers
             return CreatedAtAction(nameof(GetReview), new { id = review.Id }, review.FromReviewToReviewListDto());
         }
 
+        [Authorize]
         [HttpPatch("{id}")]
         public async Task<ActionResult> UpdateReview([FromBody] UpdateReviewDto reviewDto, [FromRoute] int id)
         {
@@ -62,6 +65,7 @@ namespace ActiveX_Api.Controllers
             return NoContent();
         }
 
+        [Authorize]
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteReview([FromRoute] int id)
         {
