@@ -31,10 +31,19 @@ namespace ActiveX_Api.Controllers
         }
 
         [HttpGet]
-        public async Task<IEnumerable<ProductsListDto>> GetProducts()
+        public async Task<IActionResult> GetProducts([FromQuery] int? category)
         {
-            var products = await _context.Products.Include(p => p.Category).ToListAsync();
-            return products.Select(p => p.FromProductToProductListDto());
+            List<Product> products = new List<Product>();
+            if (category == null) {
+                products = await _context.Products.Include(p => p.Category).ToListAsync();
+            }
+            else
+            {
+                var categoryModel = await _context.Categories.FindAsync(category);
+                if (categoryModel == null) return NotFound($"Category {category} not found");
+                products = await _context.Products.Where(p => p.CategoryId == category).Include(p => p.Category).ToListAsync();
+            }
+            return Ok(products.Select(p => p.FromProductToProductListDto()));
         }
 
         [HttpGet("{id}")]
