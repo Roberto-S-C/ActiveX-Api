@@ -34,7 +34,7 @@ namespace ActiveX_Api.Controllers
         public async Task<IActionResult> GetProducts([FromQuery] int? category)
         {
             List<Product> products = new List<Product>();
-            if (category == null) {
+            if (category == null || category == 0) {
                 products = await _context.Products.Include(p => p.Category).ToListAsync();
             }
             else
