@@ -31,19 +31,33 @@ namespace ActiveX_Api.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetProducts([FromQuery] int? category)
+        public async Task<IActionResult> GetProducts([FromQuery] string? name, [FromQuery] int? category)
         {
-            List<Product> products = new List<Product>();
-            if (category == null || category == 0) {
-                products = await _context.Products.Include(p => p.Category).ToListAsync();
-            }
-            else
+            // Start with the query for all products
+            var productQuery = _context.Products.Include(p => p.Category).AsQueryable();
+
+            // If a category is provided, filter by category
+            if (category.HasValue && category.Value != 0)
             {
-                var categoryModel = await _context.Categories.FindAsync(category);
+                var categoryModel = await _context.Categories.FindAsync(category.Value);
                 if (categoryModel == null) return NotFound($"Category {category} not found");
-                products = await _context.Products.Where(p => p.CategoryId == category).Include(p => p.Category).ToListAsync();
+
+                productQuery = productQuery.Where(p => p.CategoryId == category.Value);
             }
-            return Ok(products.Select(p => p.FromProductToProductListDto()));
+
+            // If a product name is provided, filter by product name
+            if (!string.IsNullOrEmpty(name))
+            {
+                productQuery = productQuery.Where(p => p.Name.Contains(name));
+            }
+
+            // Execute the query and retrieve the filtered list of products
+            var productList = await productQuery.ToListAsync();
+
+            // Map to the DTO (assuming FromProductToProductListDto() is an extension method)
+            var productDtos = productList.Select(p => p.FromProductToProductListDto());
+
+            return Ok(productDtos);
         }
 
         [HttpGet("{id}")]
