@@ -23,7 +23,7 @@ namespace ActiveX_Api.Controllers
         [HttpGet]
         public async Task<ActionResult> GetCategories()
         {
-            var categories = await _context.Categories.ToListAsync();
+            var categories = await _context.Categories.OrderBy(c => c.Name).ToListAsync();
             return Ok(categories);
         }
 
@@ -38,7 +38,10 @@ namespace ActiveX_Api.Controllers
         [HttpPost]
         public async Task<ActionResult> CreateCategory([FromBody] CreateCategoryDto categoryDto)
         {
-            var category = categoryDto.FromCreateCategoryDtoToCategory();
+            var category = await _context.Categories.FirstOrDefaultAsync(c => c.Name == categoryDto.Name);
+            if (category != null) return Conflict("Category already exists");
+
+            category = categoryDto.FromCreateCategoryDtoToCategory();
             var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimNames.Id)?.Value;
             category.UserId = userId;
 
