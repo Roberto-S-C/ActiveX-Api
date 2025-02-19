@@ -13,8 +13,8 @@ namespace ActiveX_Api.Dto.Product
         [Required]
         public decimal Price { get; set; }
         [Required]
-        public string File3DModel { get; set; } = string.Empty;
-        [Required]
         public int CategoryId { get; set; }
+        public IFormFile? File3DModel { get; set; }
+        
     }
 }

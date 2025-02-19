@@ -3,6 +3,7 @@ using ActiveX_Api.Constants;
 using ActiveX_Api.Dto.Product;
 using ActiveX_Api.Mappers;
 using ActiveX_Api.Models;
+using ActiveX_Api.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -74,13 +75,8 @@ namespace ActiveX_Api.Controllers
             var category =  await _context.Categories.FindAsync(productDto.CategoryId);
             if (category == null) return BadRequest("Invalid CategoryId");
 
-            if(productDto.File3DModel?.Length > 0) {
-
-                if (productDto.File3DModel.ContentType != "model/gltf-binary") return BadRequest("Invalid file type.");
-
-                string randomFileName = Path.GetRandomFileName();
-                int dotIndex = randomFileName.LastIndexOf('.');
-                string fileName = randomFileName.Substring(0, dotIndex) + ".glb"; 
+            if(FileValidation.ValidateFile(productDto.File3DModel)) {
+                string fileName = FileValidation.GenerateFileName();
                 string filePath = Path.Combine(_config["StoredFiles"], fileName);
                 string absolutePath = Path.Combine(_enviroment.WebRootPath, filePath); ;
 
@@ -106,7 +102,7 @@ namespace ActiveX_Api.Controllers
 
         [Authorize(Roles = RoleNames.Administrator)]
         [HttpPatch("{id}")]
-        public async Task<ActionResult> UpdateProduct([FromRoute] int id, [FromBody] UpdateProductDto productDto)
+        public async Task<ActionResult> UpdateProduct([FromRoute] int id, [FromForm] UpdateProductDto productDto)
         {
             var product = await _context.Products.FindAsync(id);
             if (product == null) return NotFound();
@@ -117,15 +113,27 @@ namespace ActiveX_Api.Controllers
             var category = await _context.Categories.FindAsync(productDto.CategoryId);
             if (category == null) return BadRequest("Invalid CategoryId");
 
+            if (FileValidation.ValidateFile(productDto.File3DModel)) {
+                string fileName = FileValidation.GenerateFileName();
+                string filePath = Path.Combine(_config["StoredFiles"], fileName);
+                string absolutePath = Path.Combine(_enviroment.WebRootPath, filePath); ;
+
+                using (var stream = System.IO.File.Create(absolutePath))
+                {
+                    await productDto.File3DModel.CopyToAsync(stream);
+                }
+                
+                product.File3DModel = filePath;
+            }
+
             product.Name = productDto.Name;
             product.Description = productDto.Description;
             product.Price = productDto.Price;
-            product.File3DModel = productDto.File3DModel;
             product.CategoryId = productDto.CategoryId;
             product.CreatedAt = DateOnly.FromDateTime(DateTime.Now);
-
             await _context.SaveChangesAsync();
-            return NoContent();
+
+            return NoContent(); 
         }
 
         [Authorize(Roles = RoleNames.Administrator)]
