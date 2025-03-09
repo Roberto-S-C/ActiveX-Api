@@ -1,5 +1,6 @@
 ﻿using ActiveX_Api.Constants;
 using ActiveX_Api.Dto.Account;
+using ActiveX_Api.Dto.Product;
 using ActiveX_Api.Dto.Review;
 using ActiveX_Api.Mappers;
 using ActiveX_Api.Models;
@@ -49,7 +50,17 @@ namespace ActiveX_Api.Controllers
             List<Review> reviews = await _context.Reviews.Include(r => r.Product).Where(r => r.UserId == userId).ToListAsync();
             IEnumerable<ReviewListDto> reviewsDto = reviews.Select(r => r.FromReviewToReviewListDto());
             return Ok(reviewsDto);
-        } 
-            
+        }
+
+        [Authorize(Roles = RoleNames.Administrator)]
+        [HttpGet("products")]
+        public async Task<IActionResult> GetUserProducts()
+        {
+            var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimNames.Id)?.Value;
+            List<Product> products = await _context.Products.Where(p => p.UserId == userId).ToListAsync();
+            IEnumerable<ProductsListDto> productsDto = products.Select(p => p.FromProductToProductListDto());
+            return Ok(productsDto);
+        }
+
     }
 }
