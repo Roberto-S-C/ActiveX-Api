@@ -58,7 +58,7 @@ namespace ActiveX_Api.Controllers
         {
             var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimNames.Id)?.Value;
             var address = await _context.Address.FindAsync(id);
-            if (address == null)
+            if (address == null || address.IsDeleted)
             {
                 return NotFound();
             }
@@ -82,12 +82,12 @@ namespace ActiveX_Api.Controllers
         {
             var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimNames.Id)?.Value;
             var address = await _context.Address.FindAsync(id);
-            if (address == null)
+            if (address == null || address.IsDeleted)
             {
                 return NotFound();
             }
             if (address.UserId != userId) return Unauthorized();
-            _context.Address.Remove(address);
+            address.IsDeleted = true;
             await _context.SaveChangesAsync();
             return NoContent();
         }

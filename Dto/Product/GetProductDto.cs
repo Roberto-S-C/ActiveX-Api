@@ -12,6 +12,7 @@ namespace ActiveX_Api.Dto.Product
         public decimal Price { get; set; }
         public string? File3DModel { get; set; }
         public CategoriesListDto Category { get; set; }
+        public string? StripePriceId { get; set; }
         public ICollection<ReviewListDto> Reviews { get; set; }
     }
 }

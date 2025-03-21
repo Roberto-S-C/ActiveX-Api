@@ -15,6 +15,9 @@ namespace ActiveX_Api.Models
         public Category Category { get; set; }
         public string? UserId { get; set; }
         public ApiUser User { get; set; }
+        public string? StripeProductId { get; set; }
+        public string? StripePriceId { get; set; }
         public ICollection<Review> Reviews { get; set; }
+        public ICollection<OrderItem> OrderItems { get; set; }
     }
 }

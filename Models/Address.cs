@@ -11,6 +11,7 @@
         public string? PostalCode { get; set; }
         public string? Country { get; set; }
         public string? Phone { get; set; }
+        public bool IsDeleted { get; set; } = false;
         public string? UserId { get; set; }
         public ApiUser User { get; set; }
         public ICollection<Order> Orders { get; set; }

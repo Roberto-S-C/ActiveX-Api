@@ -15,8 +15,6 @@ namespace ActiveX_Api.Models
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<Product>()
-                .HasKey(e => e.Id);
-            modelBuilder.Entity<Product>()
                 .HasMany(e => e.Reviews)
                 .WithOne(e => e.Product)
                 .HasForeignKey(e => e.ProductId);
@@ -41,10 +39,37 @@ namespace ActiveX_Api.Models
                 .HasOne(e => e.User)
                 .WithMany(e => e.Categories)
                 .HasForeignKey(e => e.UserId);
+
+            modelBuilder.Entity<Order>()
+                .HasOne(e => e.Address)
+                .WithMany(e => e.Orders)
+                .HasForeignKey(e => e.AddressId);
+            modelBuilder.Entity<Order>()
+                .HasOne(e => e.User)
+                .WithMany(e => e.Orders)
+                .HasForeignKey(e => e.UserId);
+
+            modelBuilder.Entity<OrderItem>()
+                .HasOne(e => e.Order)
+                .WithMany(e => e.OrderItems)
+                .HasForeignKey(e => e.OrderId);
+            modelBuilder.Entity<OrderItem>()
+                .HasOne(e => e.Product)
+                .WithMany(e => e.OrderItems)
+                .HasForeignKey(e => e.ProductId);
+
+            modelBuilder.Entity<Address>()
+                .HasOne(e => e.User)
+                .WithMany(e => e.Addresses)
+                .HasForeignKey(e => e.UserId);
+
         }
 
         public DbSet<Product> Products { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<Review> Reviews { get; set; }
+        public DbSet<Order> Orders { get; set; }
+        public DbSet<OrderItem> OrderItems { get; set; }
+        public DbSet<Address> Address { get; set; }
     }
 }

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.StaticFiles;
+using Stripe;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -69,6 +70,8 @@ builder.Services.AddCors(options =>
         policy.AllowAnyHeader();
     });
 });
+
+StripeConfiguration.ApiKey = builder.Configuration["Stripe:ApiKey"];
 
 var app = builder.Build();
 

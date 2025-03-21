@@ -38,6 +38,7 @@ namespace ActiveX_Api.Mappers
                 Description = product.Description,
                 Price = product.Price,
                 File3DModel = product.File3DModel,
+                StripePriceId = product.StripePriceId,
                 Category = product.Category.FromCategoryToCategoryListDto(),
                 Reviews = product.Reviews.Select(r => r.FromReviewToReviewListDto()).ToList()
             };

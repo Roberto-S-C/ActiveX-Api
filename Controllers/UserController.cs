@@ -1,5 +1,6 @@
 ﻿using ActiveX_Api.Constants;
 using ActiveX_Api.Dto.Account;
+using ActiveX_Api.Dto.Address;
 using ActiveX_Api.Dto.Product;
 using ActiveX_Api.Dto.Review;
 using ActiveX_Api.Mappers;
@@ -50,6 +51,26 @@ namespace ActiveX_Api.Controllers
             List<Review> reviews = await _context.Reviews.Include(r => r.Product).Where(r => r.UserId == userId).ToListAsync();
             IEnumerable<ReviewListDto> reviewsDto = reviews.Select(r => r.FromReviewToReviewListDto());
             return Ok(reviewsDto);
+        }
+
+        [Authorize]
+        [HttpGet("addresses")]
+        public async Task<IActionResult> GetUserAddresses()
+        {
+            var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimNames.Id)?.Value;
+            List<Address> addresses = await _context.Address.Where(a => a.UserId == userId).ToListAsync();
+            addresses = addresses.Where(a => !a.IsDeleted).ToList();
+            IEnumerable<AddressListDto> addressesDto = addresses.Select(a => a.FromAddressToAddressListDto());
+            return Ok(addressesDto);
+        }
+
+        [Authorize]
+        [HttpGet("orders")]
+        public async Task<IActionResult> GetUserOrders()
+        {
+            var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimNames.Id)?.Value;
+            List<Order> orders = await _context.Orders.Include(o => o.Address).Include(o => o.OrderItems).Where(o => o.UserId == userId).ToListAsync();
+            return Ok(orders);
         }
 
         [Authorize(Roles = RoleNames.Administrator)]
