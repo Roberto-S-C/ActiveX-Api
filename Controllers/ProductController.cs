@@ -33,7 +33,7 @@ namespace ActiveX_Api.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetProducts([FromQuery] string? name, [FromQuery] int? category)
+        public async Task<IActionResult> GetProducts([FromQuery] string? name, [FromQuery] int? category, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 6)
         {
             // Start with the query for all products
             var productQuery = _context.Products.Include(p => p.Category).AsQueryable();
@@ -53,13 +53,26 @@ namespace ActiveX_Api.Controllers
                 productQuery = productQuery.Where(p => p.Name.Contains(name));
             }
 
-            // Execute the query and retrieve the filtered list of products
-            var productList = await productQuery.ToListAsync();
+            // Get the total count of products for pagination metadata
+            var totalProducts = await productQuery.CountAsync();
+
+            // Apply pagination
+            var products = await productQuery.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
 
             // Map to the DTO (assuming FromProductToProductListDto() is an extension method)
-            var productDtos = productList.Select(p => p.FromProductToProductListDto());
+            var productDtos = products.Select(p => p.FromProductToProductListDto());
 
-            return Ok(productDtos);
+            // Create pagination metadata
+            var paginationMetadata = new
+            {
+                TotalCount = totalProducts,
+                PageSize = pageSize,
+                CurrentPage = pageNumber,
+                TotalPages = (int)Math.Ceiling(totalProducts / (double)pageSize)
+            };
+
+            // Return the products along with pagination metadata
+            return Ok(new { Products = productDtos, Pagination = paginationMetadata });
         }
 
         [HttpGet("{id}")]

@@ -75,12 +75,31 @@ namespace ActiveX_Api.Controllers
 
         [Authorize(Roles = RoleNames.Administrator)]
         [HttpGet("products")]
-        public async Task<IActionResult> GetUserProducts()
+        public async Task<IActionResult> GetUserProducts([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 6)
         {
             var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimNames.Id)?.Value;
-            List<Product> products = await _context.Products.Where(p => p.UserId == userId).ToListAsync();
-            IEnumerable<ProductsListDto> productsDto = products.Select(p => p.FromProductToProductListDto());
-            return Ok(productsDto);
+            var productQuery = _context.Products.Where(p => p.UserId == userId);
+
+            // Get the total count of products for pagination metadata
+            var totalProducts = await productQuery.CountAsync();
+
+            // Apply pagination
+            var products = await productQuery.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
+
+            // Map to the DTO (assuming FromProductToProductListDto() is an extension method)
+            var productsDto = products.Select(p => p.FromProductToProductListDto());
+
+            // Create pagination metadata
+            var paginationMetadata = new
+            {
+                TotalCount = totalProducts,
+                PageSize = pageSize,
+                CurrentPage = pageNumber,
+                TotalPages = (int)Math.Ceiling(totalProducts / (double)pageSize)
+            };
+
+            // Return the products along with pagination metadata
+            return Ok(new { Products = productsDto, Pagination = paginationMetadata });
         }
 
     }
