@@ -75,10 +75,22 @@ namespace ActiveX_Api.Controllers
 
         [Authorize(Roles = RoleNames.Administrator)]
         [HttpGet("products")]
-        public async Task<IActionResult> GetUserProducts([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 6)
+        public async Task<IActionResult> GetUserProducts([FromQuery] string? name, [FromQuery] int? category, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 6)
         {
             var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimNames.Id)?.Value;
             var productQuery = _context.Products.Where(p => p.UserId == userId);
+
+            // Filter by category if provided
+            if (category.HasValue && category.Value != 0)
+            {
+                productQuery = productQuery.Where(p => p.CategoryId == category.Value);
+            }
+
+            // Filter by name if provided
+            if (!string.IsNullOrEmpty(name))
+            {
+                productQuery = productQuery.Where(p => p.Name.Contains(name));
+            }
 
             // Get the total count of products for pagination metadata
             var totalProducts = await productQuery.CountAsync();
