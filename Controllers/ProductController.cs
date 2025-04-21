@@ -3,11 +3,13 @@ using ActiveX_Api.Constants;
 using ActiveX_Api.Dto.Product;
 using ActiveX_Api.Mappers;
 using ActiveX_Api.Models;
+using ActiveX_Api.Services;
 using ActiveX_Api.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.EntityFrameworkCore;
 using Stripe;
 
@@ -21,15 +23,17 @@ namespace ActiveX_Api.Controllers
         private readonly UserManager<ApiUser> _userManager; 
         private readonly IConfiguration _config;
         private readonly IWebHostEnvironment _enviroment;
+        private readonly BlobStorageService _blobStorageService;
 
         private readonly long _fileSizeLimit = 50 * 1024 * 1024;
 
-        public ProductController(AppDbContext context, UserManager<ApiUser> userManager, IConfiguration config, IWebHostEnvironment enviroment)
+        public ProductController(AppDbContext context, UserManager<ApiUser> userManager, IConfiguration config, IWebHostEnvironment enviroment, BlobStorageService blobStorageService)
         {
             _context = context;
             _userManager = userManager;
             _config = config;
             _enviroment = enviroment;
+            _blobStorageService = blobStorageService;
         }
 
         [HttpGet]
@@ -108,18 +112,12 @@ namespace ActiveX_Api.Controllers
             //Saving 3D Model
             if (FileValidation.ValidateFile(productDto.File3DModel)) {
                 string fileName = FileValidation.GenerateFileName();
-                string filePath = Path.Combine(_config["StoredFiles"], fileName);
-                string absolutePath = Path.Combine(_enviroment.WebRootPath, filePath); ;
-
-                using (var stream = System.IO.File.Create(absolutePath))
-                {
-                    await productDto.File3DModel.CopyToAsync(stream);
-                }
-
+                string blobUrl = await _blobStorageService.UploadFileAsync(productDto.File3DModel, fileName);   
+                
                 var product = productDto.FromCreateProductDtoToProduct();
                 var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimNames.Id)?.Value;
                 product.UserId = userId;
-                product.File3DModel = filePath;
+                product.File3DModel = blobUrl;
                 product.StripeProductId = stripeProduct.Id;
                 product.StripePriceId = stripePrice.Id;
 
@@ -170,16 +168,9 @@ namespace ActiveX_Api.Controllers
             }
 
             if (FileValidation.ValidateFile(productDto.File3DModel)) {
-                string fileName = FileValidation.GenerateFileName();
-                string filePath = Path.Combine(_config["StoredFiles"], fileName);
-                string absolutePath = Path.Combine(_enviroment.WebRootPath, filePath); ;
+                var blobUrl = await _blobStorageService.UploadFileAsync(productDto.File3DModel, product.File3DModel);
 
-                using (var stream = System.IO.File.Create(absolutePath))
-                {
-                    await productDto.File3DModel.CopyToAsync(stream);
-                }
-                
-                product.File3DModel = filePath;
+                product.File3DModel = blobUrl; 
             }
 
             product.Name = productDto.Name;
