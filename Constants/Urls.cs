@@ -2,6 +2,6 @@
 {
     public static class Urls
     {
-        public const string Frontend = "http://localhost:5173";
+        public const string Frontend = "https://www.activex.club";
     }
 }
