@@ -8,8 +8,8 @@ namespace ActiveX_Api.Services
 
         public BlobStorageService(IConfiguration configuration)
         {
-            var connectionString = configuration["AzureBlobStorage:ConnectionString"];
-            var containerName = configuration["AzureBlobStorage:ContainerName"];
+            var connectionString = configuration["Storage:ConnStr"];
+            var containerName = configuration["Storage:ContainerName"];
 
             var blobServiceClient = new BlobServiceClient(connectionString);
             _containerClient = blobServiceClient.GetBlobContainerClient(containerName);
