@@ -22,17 +22,13 @@ namespace ActiveX_Api.Controllers
         private readonly AppDbContext _context; 
         private readonly UserManager<ApiUser> _userManager; 
         private readonly IConfiguration _config;
-        private readonly IWebHostEnvironment _enviroment;
         private readonly BlobStorageService _blobStorageService;
 
-        private readonly long _fileSizeLimit = 50 * 1024 * 1024;
-
-        public ProductController(AppDbContext context, UserManager<ApiUser> userManager, IConfiguration config, IWebHostEnvironment enviroment, BlobStorageService blobStorageService)
+        public ProductController(AppDbContext context, UserManager<ApiUser> userManager, IConfiguration config, BlobStorageService blobStorageService)
         {
             _context = context;
             _userManager = userManager;
             _config = config;
-            _enviroment = enviroment;
             _blobStorageService = blobStorageService;
         }
 

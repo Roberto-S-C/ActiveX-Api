@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.StaticFiles;
 using Stripe;
 using ActiveX_Api.Services;
 
@@ -17,6 +16,7 @@ builder.Services.AddControllers().AddNewtonsoftJson(options => {
     options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
 });
 builder.Services.AddSingleton<BlobStorageService>();
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -92,14 +92,6 @@ else
 app.UseHttpsRedirection();
 
 app.UseCors();
-
-var provider = new FileExtensionContentTypeProvider();
-provider.Mappings[".glb"] = "model/gltf-binary";
-app.UseStaticFiles(new StaticFileOptions
-{
-    ContentTypeProvider = provider
-});
-
 
 app.UseAuthentication();
 app.UseAuthorization();
